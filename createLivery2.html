@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Livery creator</title>
+    <style>
+        button {
+            border: none;
+            color: white;
+            background: cornflowerblue;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+        }
+
+        li {
+            margin-bottom: 1em;
+        }
+
+        label {
+            width: 200px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body style="width:90%;padding: 4em 0 0 4em">
+<h1>Livery Creator</h1>
+<div>Explanation: Choose a name and the three colors in the color picker or just enter valid hex values in the textfields.
+When you are finished just click the create button and the text which needs to be copied into a file in the liveries folder will be copied to your clipboard.
+you can simply paste it (ctrl+v) into an empty file in the folder "PhantomBrigade\Configs\DataDecomposed\Equipment\Liveries".
+The filename should be lowercase and only contain underscores and a-z as far as i know and has to have a .yaml ending.</div>
+<ul style="list-style: none;">
+    <li>
+        <label for="name" style="width:140px">Name</label>
+        <input type="text" id="name" name="textName">
+    </li>
+    <li>
+        <label for="color_r" style="width:140px">Main color</label>
+        <input type="color" id="color_r" name="colorPrimary" oninput="setHexText('color_r')" value="#000000">
+        <input type="text" id="color_r_text" name="colorPrimary" value="#000000">
+    </li>
+    <li>
+        <label for="color_g" style="width:140px">Secondary color</label>
+        <input type="color" id="color_g" name="colorSecondary" oninput="setHexText('color_g')" value="#000000">
+        <input type="text" id="color_g_text" name="colorSecondary" value="#000000">
+    </li>
+    <li>
+        <label for="color_b" style="width:140px">Tertiary color</label>
+        <input type="color" id="color_b" name="colorTertiary" oninput="setHexText('color_b')" value="#000000">
+        <input type="text" id="color_b_text" name="colorTertiary" value="#000000">
+    </li>
+    <button onclick="onClickCreate()">Create</button>
+</ul>
+<script type="text/javascript">
+    // on color picker change change text
+    function setHexText(field) {
+        const value = document.getElementById(field).value,
+            target = `${field}_text`;
+        document.getElementById(target).value = value;
+    }
+
+    // copy to clipboard function
+    function copyToClipboard(string) {
+        navigator.clipboard.writeText(string).then(function () {
+            alert('Copied to clipboard, just paste it!');
+        }, function (err) {
+            console.error('Error: ', err);
+        });
+    }
+
+    // function to create the text for the livery file
+    function onClickCreate() {
+        const hexToRgb = hex => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: (parseInt(result[1], 16) / 255).toFixed(7),
+                g: (parseInt(result[2], 16) / 255).toFixed(7),
+                b: (parseInt(result[3], 16) / 255).toFixed(7),
+                a: 0
+            } : null;
+        }
+        const name = document.getElementById('name').value,
+            colorPrimary = document.getElementById('color_r_text').value,
+            colorSecondary = document.getElementById('color_g_text').value,
+            colorTertiary = document.getElementById('color_b_text').value;
+
+        if (!name || !colorPrimary || !colorSecondary || !colorTertiary) {
+            alert('Missing parameters');
+            return;
+        }
+        const colorArray = [
+            {name: 'colorPrimary', ...hexToRgb(colorPrimary)},
+            {name: 'colorSecondary', ...hexToRgb(colorSecondary)},
+            {name: 'colorTertiary', ...hexToRgb(colorTertiary)}
+        ];
+        let string = '';
+        string += `textName: ${name}\n`;
+        string += `source: \'[aa]${name}\'\n`;
+        string += 'rating: 1\n';
+        string += 'pattern:\n';
+        colorArray.forEach(colorObject => {
+            for (const [key, value] of Object.entries(colorObject)) {
+                if (key === 'name') string += `${value}:\n`;
+                else string += `  ${key}: ${value}\n`;
+            }
+        });
+        string += 'materialPrimary: &o0\n';
+        string += '  x: 0\n';
+        string += '  y: 0.5\n';
+        string += '  z: 0.8\n';
+        string += '  w: 0\n';
+        string += 'materialSecondary: *o0\n';
+        string += 'materialTertiary: *o0\n';
+        copyToClipboard(string);
+    }
+</script>
+</body>
+</html>
+
+<!--
+textName: USA
+source: '[aa]USA'
+rating: 1
+pattern:
+colorPrimary:
+r: 0.2352941
+g: 0.2313725
+b: 0.4313725
+a: 0
+colorSecondary:
+r: 0.6980392
+g: 0.1333333
+b: 0.2039215
+a: 0
+colorTertiary:
+r: 1.0
+g: 1.0
+b: 1.0
+a: 0
+materialPrimary: &o0
+x: 0
+y: 0.5
+z: 0.8
+w: 0
+materialSecondary: *o0
+materialTertiary: *o0
+-->
+
