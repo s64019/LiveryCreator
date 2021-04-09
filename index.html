@@ -29,10 +29,15 @@
 </head>
 <body style="width:90%;padding: 4em 0 0 4em">
 <h1>Livery Creator</h1>
-<div>Explanation: Choose a name and the three colors in the color picker or just enter valid hex values in the textfields.
-When you are finished just click the create button and the text which needs to be copied into a file in the liveries folder will be copied to your clipboard.
-you can simply paste it (ctrl+v) into an empty file in the folder "PhantomBrigade\Configs\DataDecomposed\Equipment\Liveries".
-The filename should be lowercase and only contain underscores and a-z as far as i know and has to have a .yaml ending.</div>
+<div>Explanation: Choose a name and the three colors in the color picker or just enter valid hex values in the
+    textfields.
+    When you are finished just click the create button and the text which needs to be copied into a file in the liveries
+    folder will be copied to your clipboard.
+    you can simply paste it (ctrl+v) into an empty file in the folder
+    "PhantomBrigade\Configs\DataDecomposed\Equipment\Liveries".
+    The filename should be lowercase and only contain underscores and a-z as far as i know and has to have a .yaml
+    ending.
+</div>
 <ul style="list-style: none;">
     <li>
         <label for="name" style="width:140px">Name</label>
@@ -53,9 +58,30 @@ The filename should be lowercase and only contain underscores and a-z as far as 
         <input type="color" id="color_b" name="colorTertiary" oninput="setHexText('color_b')" value="#000000">
         <input type="text" id="color_b_text" name="colorTertiary" value="#000000">
     </li>
-    <button onclick="onClickCreate()">Create</button>
+    <button onclick="onClickCreate()">Copy to clipboard</button>
+    <button onclick="onClickSaveFile()">Create file</button>
 </ul>
 <script type="text/javascript">
+
+    function onClickSaveFile() {
+        const data = createText(),
+            blob = new Blob([data], {encoding: "UTF-8", type: "text/plain;charset=UTF-8"}),
+            fileName = document.getElementById('name').value.toLowerCase().replace(/[^a-z.]/g, '_') + '.yaml';
+
+        if(!data) return;
+
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveBlob(blob, fileName);
+        } else {
+            const elem = window.document.createElement('a');
+            elem.href = window.URL.createObjectURL(blob);
+            elem.download = fileName;
+            document.body.appendChild(elem);
+            elem.click();
+            document.body.removeChild(elem);
+        }
+    }
+
     // on color picker change change text
     function setHexText(field) {
         const value = document.getElementById(field).value,
@@ -72,8 +98,14 @@ The filename should be lowercase and only contain underscores and a-z as far as 
         });
     }
 
-    // function to create the text for the livery file
+    // click copy to clipboard
     function onClickCreate() {
+        const string = createText();
+        copyToClipboard(string);
+    }
+
+    // function to create the text for the livery file
+    function createText() {
         const hexToRgb = hex => {
             const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
             return result ? {
@@ -115,7 +147,7 @@ The filename should be lowercase and only contain underscores and a-z as far as 
         string += '  w: 0\n';
         string += 'materialSecondary: *o0\n';
         string += 'materialTertiary: *o0\n';
-        copyToClipboard(string);
+        return string;
     }
 </script>
 </body>
